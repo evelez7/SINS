@@ -2,6 +2,7 @@
 #define EV_VECTOR_HPP
 
 #include "allocator.hpp"
+#include <algorithm>
 #include <cstddef>
 #include <stdexcept>
 
@@ -42,7 +43,12 @@ public:
   }
 
   void pop_back() {
-    // p = allocator.deallocate(p, count);
+    T *newP = allocator.allocate(count - 1);
+    for (unsigned i = 0; i < count - 1; ++i)
+      newP[i] = p[i];
+
+    allocator.deallocate(p, count);
+    p = newP;
     count -= 1;
   }
 

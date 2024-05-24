@@ -11,11 +11,8 @@ public:
   T *allocate(std::size_t n) {
     return new T[n];
   }
-  
-  T *deallocate(T *p, size_t n) {
-    delete p[n];
-    return p;
-  }
+
+  void deallocate(T *p, size_t n) { delete p; }
 };
 } // namespace ev
 

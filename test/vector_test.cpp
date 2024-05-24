@@ -35,6 +35,7 @@ TEST(VectorTest, PopBack) {
   
   test.pop_back();
   EXPECT_EQ(test.size(), 1);
+  EXPECT_EQ(test[0], 1);
 }
 
 TEST(VectorTest, Reserve) {
