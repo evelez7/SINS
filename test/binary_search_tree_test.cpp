@@ -44,4 +44,16 @@ TEST(BinarySearchTreeTest, Contains)
   EXPECT_TRUE(tree.contains(11));
   EXPECT_FALSE(tree.contains(42));
 }
-// TEST(BinarySearchTreeTest,
+
+TEST(BinarySearchTreeTest, Remove)
+{
+  BinarySearchTree<int> tree;
+  ASSERT_TRUE(tree.insert(7));
+  ASSERT_TRUE(tree.insert(6));
+  ASSERT_TRUE(tree.insert(3));
+  ASSERT_TRUE(tree.insert(11));
+  ASSERT_TRUE(tree.insert(1));
+  EXPECT_NO_THROW(tree.remove(42));
+  EXPECT_NO_THROW(tree.remove(11));
+  EXPECT_FALSE(tree.contains(11));
+}
