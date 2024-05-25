@@ -34,7 +34,7 @@ template <typename T> class BinarySearchTree
     return false;
   }
 
-  bool contains(const T &toFind, Node *node)
+  bool contains(const T &toFind, Node *&node)
   {
     if (!node)
       return false;
@@ -56,14 +56,14 @@ template <typename T> class BinarySearchTree
 
   Node *findMax(Node *node) const
   {
-    if (node == nullptr)
+    if (!node)
       return nullptr;
     if (node->right == nullptr)
       return node;
     return findMax(node->right);
   }
 
-  void remove(const T &toRemove, Node *node)
+  void remove(const T &toRemove, Node *&node)
   {
     if (!node)
       return;
@@ -81,6 +81,7 @@ template <typename T> class BinarySearchTree
       Node *old = node;
       node = (node->left != nullptr) ? node->left : node->right;
       delete old;
+      old = nullptr;
     }
   }
 
