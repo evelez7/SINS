@@ -19,7 +19,7 @@ template <typename T> class BinarySearchTree
 
   Node *root;
 
-  bool insert(const T &toInsert, Node *node)
+  bool insert(const T &toInsert, Node *&node)
   {
     if (!node)
     {
@@ -27,20 +27,20 @@ template <typename T> class BinarySearchTree
       return true;
     }
     else if (toInsert < node->data)
-      insert(toInsert, node->left);
+      return insert(toInsert, node->left);
     else if (toInsert > node->data)
-      insert(toInsert, node->right);
+      return insert(toInsert, node->right);
     return false;
   }
 
-  bool contains(const T &toFind, Node *node)
+  bool contains(const T &toFind, Node *&node)
   {
     if (!node)
       return false;
     else if (toFind < node->data)
-      contains(toFind, node->left);
+      return contains(toFind, node->left);
     else if (toFind > node->data)
-      contains(toFind, node->right);
+      return contains(toFind, node->right);
     return true;
   }
 
