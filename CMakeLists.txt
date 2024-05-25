@@ -17,6 +17,7 @@ enable_testing()
 add_executable(
   test.exe
   test/vector_test.cpp
+  test/binary_search_tree_test.cpp
 )
 
 target_link_libraries(
