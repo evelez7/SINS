@@ -78,7 +78,7 @@ template <typename T> class BinarySearchTree
     else
     {
       Node *old = node;
-      node = (node->left) ? node->left : node->right;
+      node = (node->left != nullptr) ? node->left : node->right;
       delete old;
     }
   }
