@@ -1,8 +1,9 @@
 #ifndef BINARY_SEARCH_TREE_H
 #define BINARY_SEARCH_TREE_H
 
-#include <utility>
-
+/**
+  Implemented according to Weiss, 4th ed.
+*/
 template <typename T> class BinarySearchTree
 {
   struct Node
@@ -83,8 +84,23 @@ template <typename T> class BinarySearchTree
     }
   }
 
+  void clear(Node *node)
+  {
+    if (!node)
+      return;
+    clear(node->left);
+    clear(node->right);
+    delete node;
+    node = nullptr;
+  }
+
 public:
   BinarySearchTree() : root(nullptr) {}
+
+  ~BinarySearchTree()
+  {
+    clear(root);
+  }
 
   bool insert(const T &toInsert)
   {
@@ -109,6 +125,11 @@ public:
   void remove(const T &toRemove)
   {
     remove(toRemove, root);
+  }
+
+  void clear()
+  {
+    clear(root);
   }
 };
 
