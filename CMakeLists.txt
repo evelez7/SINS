@@ -18,6 +18,7 @@ add_executable(
   test.exe
   test/vector_test.cpp
   test/binary_search_tree_test.cpp
+  test/avl_tree.cpp
 )
 
 target_link_libraries(

@@ -103,7 +103,7 @@ public:
     clear(root);
   }
 
-  bool insert(const T &toInsert)
+  virtual bool insert(const T &toInsert)
   {
     return insert(toInsert, root);
   }
