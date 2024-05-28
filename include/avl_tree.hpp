@@ -77,26 +77,55 @@ template <typename T> class AVLTree : BinarySearchTree<T>
 
     a->left = t0;
     a->right = t1;
-    t0->parent = a;
-    t1->parent = a;
+    if (t0 && t1)
+    {
+      t0->parent = a;
+      t1->parent = a;
+    }
 
     b->right = c;
     c->parent = b;
 
     c->left = t2;
     c->right = t3;
-    t2->parent = c;
-    t3->parent = c;
+    if (t2 && t3)
+    {
+      t2->parent = c;
+      t3->parent = c;
+    }
     return b;
   }
 
   void rebalance(AVLNode *&node)
   {
-    node->height = 1 + std::max(node->left->height, node->right->height);
+    if (!node->left && !node->right)
+      node->height = 1;
+    else if (!node->left)
+      node->height = 1 + node->right->height;
+    else if (!node->right)
+      node->height = 1 + node->left->height;
+    else
+      node->height = 1 + std::max(node->left->height, node->right->height);
     while (node != root)
     {
       node = node->parent;
-      if (node->left->height - node->right->height > 1)
+      int leftHeight, rightHeight;
+      if (!node->left)
+      {
+        rightHeight = node->right->height;
+        leftHeight = 0;
+      }
+      else if (!node->right)
+      {
+        leftHeight = node->left->height;
+        rightHeight = 0;
+      }
+      else
+      {
+        leftHeight = node->left->height;
+        rightHeight = node->right->height;
+      }
+      if (leftHeight - rightHeight > 1)
       {
         AVLNode *tallestChild;
         if (node->left->height > node->right->height)
@@ -111,8 +140,28 @@ template <typename T> class AVLTree : BinarySearchTree<T>
           tallestGrandchild = tallestChild->right;
         node = restructure(tallestGrandchild);
       }
-      node->height = 1 + std::max(node->left->height, node->right->height);
+      if (!node->left)
+      {
+        rightHeight = node->right->height;
+        leftHeight = 0;
+      }
+      else if (!node->right)
+      {
+        leftHeight = node->left->height;
+        rightHeight = 0;
+      }
+      else
+      {
+        leftHeight = node->left->height;
+        rightHeight = node->right->height;
+      }
+      node->height = 1 + std::max(leftHeight, rightHeight);
     }
+
+    auto *toFindRoot = node->parent;
+    while (node->parent)
+      node = node->parent;
+    root = toFindRoot;
   }
 
   AVLNode *insert(const T &toInsert, AVLNode *&node, AVLNode *&parent)
@@ -135,6 +184,8 @@ template <typename T> class AVLTree : BinarySearchTree<T>
   }
 
 public:
+  AVLTree() : root(nullptr) {}
+
   virtual bool insert(const T &toInsert)
   {
     AVLNode *node;
@@ -145,12 +196,19 @@ public:
     }
     else
       node = insert(toInsert, root, node->parent);
-    if (node)
+    if (node && node->parent && node->parent->parent)
     {
-      restructure(node);
+      rebalance(node);
       return true;
     }
+    else if (node)
+      return true;
     return false;
+  }
+
+  AVLNode *getRoot()
+  {
+    return root;
   }
 };
 } // namespace ev
