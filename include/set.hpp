@@ -28,6 +28,11 @@ public:
   {
     s.clear();
   }
+
+  bool empty()
+  {
+    return s.empty();
+  }
 };
 } // namespace ev
 

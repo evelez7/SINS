@@ -304,6 +304,13 @@ public:
   {
     clear(root);
   }
+
+  bool empty()
+  {
+    if (!root)
+      return true;
+    return false;
+  }
 };
 } // namespace ev
 

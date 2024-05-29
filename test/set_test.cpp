@@ -17,4 +17,5 @@ TEST(SetTest, Clear)
   ev::set<int> s;
   s.insert(1);
   ASSERT_NO_THROW(s.clear());
+  EXPECT_TRUE(s.empty());
 }
