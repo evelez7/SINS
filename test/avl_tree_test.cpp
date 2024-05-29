@@ -9,6 +9,17 @@ TEST(AVLTreeTest, Insert)
   EXPECT_TRUE(tree.insert(-1));
 }
 
+TEST(AVLTreeTest, Clear)
+{
+  ev::AVLTree<int> tree;
+  EXPECT_TRUE(tree.insert(1));
+  EXPECT_TRUE(tree.insert(2));
+  EXPECT_TRUE(tree.insert(-1));
+
+  ASSERT_NO_THROW(tree.clear());
+  EXPECT_EQ(tree.getRoot(), nullptr);
+}
+
 TEST(AVLTreeTest, Rotation)
 {
   ev::AVLTree<int> tree;

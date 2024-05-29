@@ -1,12 +1,13 @@
 #ifndef EV_AVL_TREE_H
 #define EV_AVL_TREE_H
 
-#include "binary_search_tree.h"
 #include <algorithm>
+#include <array>
+#include <stdexcept>
 
 namespace ev
 {
-template <typename T> class AVLTree : BinarySearchTree<T>
+template <typename T> class AVLTree
 {
   struct AVLNode
   {
@@ -24,7 +25,8 @@ template <typename T> class AVLTree : BinarySearchTree<T>
   AVLNode *root;
 
   /**
-    Trinode restructuring according to Goodrich, Tamassia p118
+    Trinode restructuring according to Goodrich, Tamassia
+    Covers all 4 cases for rotations, the last two being double rotations
   */
   AVLNode *restructure(AVLNode *&node)
   {
@@ -72,6 +74,17 @@ template <typename T> class AVLTree : BinarySearchTree<T>
       t0 = a->left;
       t3 = c->right;
     }
+    // replace the subtree rooted at z
+    auto *restOfTree = node->parent->parent->parent;
+    b->parent = restOfTree;
+    if (!restOfTree)
+      root = b;
+    else if (restOfTree->left->data == node->data)
+      restOfTree->left = b;
+    else if (restOfTree->right->data == node->data)
+      restOfTree->right = b;
+    else
+      throw std::domain_error("Error in restructuring");
     b->left = a;
     a->parent = b;
 
@@ -96,84 +109,138 @@ template <typename T> class AVLTree : BinarySearchTree<T>
     return b;
   }
 
-  void rebalance(AVLNode *&node)
+  std::array<int, 2> getHeights(AVLNode *node)
   {
+    std::array<int, 2> heights;
     if (!node->left && !node->right)
-      node->height = 1;
-    else if (!node->left)
-      node->height = 1 + node->right->height;
-    else if (!node->right)
-      node->height = 1 + node->left->height;
-    else
-      node->height = 1 + std::max(node->left->height, node->right->height);
-    while (node != root)
     {
-      node = node->parent;
-      int leftHeight, rightHeight;
-      if (!node->left)
-      {
-        rightHeight = node->right->height;
-        leftHeight = 0;
-      }
-      else if (!node->right)
-      {
-        leftHeight = node->left->height;
-        rightHeight = 0;
-      }
+      heights[0] = 0;
+      heights[1] = 0;
+    }
+    else if (!node->left)
+    {
+      heights[1] = node->right->height;
+      heights[0] = 0;
+    }
+    else if (!node->right)
+    {
+      heights[0] = node->left->height;
+      heights[1] = 0;
+    }
+    else
+    {
+      heights[0] = node->left->height;
+      heights[1] = node->right->height;
+    }
+    return heights;
+  }
+
+  void rebalance(AVLNode *node)
+  {
+    auto heights = getHeights(node);
+    node->height = 1 + std::max(heights[0], heights[1]);
+    AVLNode *tempNode = node;
+    while (tempNode != root)
+    {
+      if (!tempNode)
+        tempNode = node->parent;
       else
-      {
-        leftHeight = node->left->height;
-        rightHeight = node->right->height;
-      }
-      if (leftHeight - rightHeight > 1)
+        tempNode = tempNode->parent;
+      auto childrenHeights = getHeights(tempNode);
+      if (abs(childrenHeights[0] - childrenHeights[1]) > 1)
       {
         AVLNode *tallestChild;
-        if (node->left->height > node->right->height)
-          tallestChild = node->left;
+        if (childrenHeights[0] > childrenHeights[1])
+          tallestChild = tempNode->left;
         else
-          tallestChild = node->right;
+          tallestChild = tempNode->right;
 
         AVLNode *tallestGrandchild;
-        if (tallestChild->left->height > tallestChild->right->height)
+        auto grandchildHeights = getHeights(tallestChild);
+        if (grandchildHeights[0] > grandchildHeights[1])
           tallestGrandchild = tallestChild->left;
         else
           tallestGrandchild = tallestChild->right;
-        node = restructure(tallestGrandchild);
+        tempNode = restructure(tallestGrandchild);
       }
-      if (!node->left)
-      {
-        rightHeight = node->right->height;
-        leftHeight = 0;
-      }
-      else if (!node->right)
-      {
-        leftHeight = node->left->height;
-        rightHeight = 0;
-      }
-      else
-      {
-        leftHeight = node->left->height;
-        rightHeight = node->right->height;
-      }
-      node->height = 1 + std::max(leftHeight, rightHeight);
+
+      childrenHeights = getHeights(tempNode);
+      tempNode->height = 1 + std::max(childrenHeights[0], childrenHeights[1]);
     }
 
-    auto *toFindRoot = node->parent;
-    while (node->parent)
-      node = node->parent;
-    root = toFindRoot;
+    while (tempNode->parent)
+      tempNode = tempNode->parent;
+    root = tempNode;
+  }
+
+  bool contains(const T &toFind, AVLNode *&node)
+  {
+    if (!node)
+      return false;
+    else if (toFind < node->data)
+      return contains(toFind, node->left);
+    else if (toFind > node->data)
+      return contains(toFind, node->right);
+    return true;
+  }
+
+  AVLNode *findMin(AVLNode *node) const
+  {
+    if (node == nullptr)
+      return nullptr;
+    if (node->left == nullptr)
+      return node;
+    return findMin(node->left);
+  }
+
+  AVLNode *findMax(AVLNode *node) const
+  {
+    if (!node)
+      return nullptr;
+    if (node->right == nullptr)
+      return node;
+    return findMax(node->right);
+  }
+
+  void remove(const T &toRemove, AVLNode *&node)
+  {
+    if (!node)
+      return;
+    if (toRemove < node->data)
+      remove(toRemove, node->left);
+    else if (toRemove > node->data)
+      remove(toRemove, node->right);
+    else if (node->left && node->right)
+    {
+      node->data = findMin(node->right)->data;
+      remove(node->data, node->right);
+    }
+    else
+    {
+      AVLNode *old = node;
+      node = (node->left != nullptr) ? node->left : node->right;
+      delete old;
+      old = nullptr;
+    }
+  }
+
+  void clear(AVLNode *&node)
+  {
+    if (!node)
+      return;
+    if (node->left)
+      clear(node->left);
+    if (node->right)
+      clear(node->right);
+    delete node;
+    node = nullptr;
   }
 
   AVLNode *insert(const T &toInsert, AVLNode *&node, AVLNode *&parent)
   {
     if (!node)
     {
-      int height;
-      if (!parent)
-        height = 0;
-      else
-        height = parent->height + 1;
-      node = new AVLNode(toInsert, nullptr, nullptr, parent, height);
+      node = new AVLNode(toInsert, nullptr, nullptr, parent, 1);
       return node;
     }
     else if (toInsert < node->data)
@@ -185,17 +252,19 @@ template <typename T> class AVLTree : BinarySearchTree<T>
 
 public:
   AVLTree() : root(nullptr) {}
+  ~AVLTree()
+  {
+    clear(root);
+  }
 
   virtual bool insert(const T &toInsert)
   {
-    AVLNode *node;
     if (!root)
     {
       root = new AVLNode(toInsert, nullptr, nullptr, nullptr, 0);
       return true;
     }
-    else
-      node = insert(toInsert, root, node->parent);
+    AVLNode *node = insert(toInsert, root, node->parent);
     if (node && node->parent && node->parent->parent)
     {
       rebalance(node);
@@ -209,6 +278,31 @@ public:
   AVLNode *getRoot()
   {
     return root;
+  }
+
+  bool contains(const T &toFind)
+  {
+    return contains(toFind, root);
+  }
+
+  const T &findMin() const
+  {
+    return findMin(root)->data;
+  }
+
+  const T &findMax() const
+  {
+    return findMax(root)->data;
+  }
+
+  void remove(const T &toRemove)
+  {
+    remove(toRemove, root);
+  }
+
+  void clear()
+  {
+    clear(root);
   }
 };
 } // namespace ev

@@ -85,12 +85,14 @@ template <typename T> class BinarySearchTree
     }
   }
 
-  void clear(Node *node)
+  void clear(Node *&node)
   {
     if (!node)
       return;
-    clear(node->left);
-    clear(node->right);
+    if (node->left)
+      clear(node->left);
+    if (node->right)
+      clear(node->right);
     delete node;
     node = nullptr;
   }
