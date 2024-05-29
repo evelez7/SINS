@@ -85,12 +85,14 @@ template <typename T> class BinarySearchTree
     }
   }
 
-  void clear(Node *node)
+  void clear(Node *&node)
   {
     if (!node)
       return;
-    clear(node->left);
-    clear(node->right);
+    if (node->left)
+      clear(node->left);
+    if (node->right)
+      clear(node->right);
     delete node;
     node = nullptr;
   }
@@ -103,7 +105,7 @@ public:
     clear(root);
   }
 
-  bool insert(const T &toInsert)
+  virtual bool insert(const T &toInsert)
   {
     return insert(toInsert, root);
   }
