@@ -4,3 +4,4 @@ BreakBeforeBraces: Allman
 AllowShortIfStatementsOnASingleLine: false
 AllowShortBlocksOnASingleLine: Empty
 AllowShortFunctionsOnASingleLine: Empty
+SpaceAfterTemplateKeyword: false

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(ev_stl)
 
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 include(FetchContent)
@@ -19,6 +20,7 @@ add_executable(
   test/vector_test.cpp
   test/binary_search_tree_test.cpp
   test/avl_tree_test.cpp
+  test/set_test.cpp
 )
 
 target_link_libraries(

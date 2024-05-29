@@ -257,7 +257,7 @@ public:
     clear(root);
   }
 
-  virtual bool insert(const T &toInsert)
+  bool insert(const T &toInsert)
   {
     if (!root)
     {
