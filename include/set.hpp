@@ -33,6 +33,11 @@ public:
   {
     return s.empty();
   }
+
+  void remove(const T &value)
+  {
+    s.remove(value);
+  }
 };
 } // namespace ev
 
