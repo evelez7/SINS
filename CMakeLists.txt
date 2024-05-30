@@ -37,3 +37,13 @@ target_include_directories(
 include(GoogleTest)
 gtest_discover_tests(test.exe)
 
+find_package(benchmark REQUIRED)
+
+add_executable(benchmark.exe 
+  benchmark/set_benchmark.cpp
+)
+
+target_link_libraries(benchmark.exe benchmark::benchmark)
+
+target_include_directories(benchmark.exe PUBLIC include)
+
