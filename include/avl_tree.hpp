@@ -24,6 +24,18 @@ template <typename T> class AVLTree
   };
   AVLNode *root;
 
+  void updateHeights(AVLNode *node)
+  {
+    if (node == nullptr)
+      return;
+    if (node->left)
+      updateHeights(node->left);
+    if (node->right)
+      updateHeights(node->right);
+    auto heights = getHeights(node);
+    node->height = std::max(heights[0], heights[1]) + 1;
+  }
+
   /**
     Trinode restructuring according to Goodrich, Tamassia
     Covers all 4 cases for rotations, the last two being double rotations
@@ -66,7 +78,8 @@ template <typename T> class AVLTree
       t3 = c->right;
       t0 = a->left;
     }
-    else
+    else if (node->data > node->parent->data &&
+             node->parent->data < node->parent->parent->data)
     {
       b = node;
       a = b->parent;
@@ -76,15 +89,24 @@ template <typename T> class AVLTree
       t0 = a->left;
       t3 = c->right;
     }
+    else
+      throw std::runtime_error("restructure: node is not a child of its "
+                               "parent");
+
     // replace the subtree rooted at z
     auto *restOfTree = node->parent->parent->parent;
-    b->parent = restOfTree;
-    if (restOfTree == nullptr)
+    if (!restOfTree)
       root = b;
-    else if (restOfTree->left && restOfTree->left->data == b->data)
+    else if (restOfTree->left &&
+             restOfTree->left->data == node->parent->parent->data)
       restOfTree->left = b;
-    else if (restOfTree->right && restOfTree->right->data == b->data)
+    else if (restOfTree->right &&
+             restOfTree->right->data == node->parent->parent->data)
       restOfTree->right = b;
+    else
+      throw std::runtime_error("restructure: node is not a child of its "
+                               "parent");
+    b->parent = restOfTree;
 
     b->left = a;
     a->parent = b;
@@ -106,32 +128,9 @@ template <typename T> class AVLTree
     if (t3)
       t3->parent = c;
 
-    if (!a->left && !a->right)
-      a->height = 1;
-    else if (!a->left)
-      a->height = a->right->height + 1;
-    else if (!a->right)
-      a->height = a->left->height + 1;
-    else
-      a->height = std::max(a->left->height, a->right->height) + 1;
-
-    if (!b->left && !b->right)
-      b->height = 1;
-    else if (!b->left)
-      b->height = b->right->height + 1;
-    else if (!b->right)
-      b->height = b->left->height + 1;
-    else
-      b->height = std::max(b->left->height, b->right->height) + 1;
-
-    if (!c->left && !c->right)
-      c->height = 1;
-    else if (!c->left)
-      c->height = c->right->height + 1;
-    else if (!c->right)
-      c->height = c->left->height + 1;
-    else
-      c->height = std::max(c->left->height, c->right->height) + 1;
+    updateHeights(a);
+    updateHeights(b);
+    updateHeights(c);
 
     return b;
   }
