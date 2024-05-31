@@ -24,6 +24,18 @@ template <typename T> class AVLTree
   };
   AVLNode *root;
 
+  void updateHeights(AVLNode *node)
+  {
+    if (node == nullptr)
+      return;
+    if (node->left)
+      updateHeights(node->left);
+    if (node->right)
+      updateHeights(node->right);
+    auto heights = getHeights(node);
+    node->height = std::max(heights[0], heights[1]) + 1;
+  }
+
   /**
     Trinode restructuring according to Goodrich, Tamassia
     Covers all 4 cases for rotations, the last two being double rotations
@@ -31,6 +43,8 @@ template <typename T> class AVLTree
   AVLNode *restructure(AVLNode *&node)
   {
     AVLNode *a, *b, *c, *t0, *t1, *t2, *t3;
+    /// let a, b, c be inorder of x, y, z where x = node, y=parent, and
+    /// z=grandparent
     if (node->data < node->parent->data &&
         node->parent->data < node->parent->parent->data)
     {
@@ -64,7 +78,8 @@ template <typename T> class AVLTree
       t3 = c->right;
       t0 = a->left;
     }
-    else
+    else if (node->data > node->parent->data &&
+             node->parent->data < node->parent->parent->data)
     {
       b = node;
       a = b->parent;
@@ -74,38 +89,49 @@ template <typename T> class AVLTree
       t0 = a->left;
       t3 = c->right;
     }
+    else
+      throw std::runtime_error("restructure: node is not a child of its "
+                               "parent");
+
     // replace the subtree rooted at z
     auto *restOfTree = node->parent->parent->parent;
-    b->parent = restOfTree;
     if (!restOfTree)
       root = b;
-    else if (restOfTree->left->data == node->data)
+    else if (restOfTree->left &&
+             restOfTree->left->data == node->parent->parent->data)
       restOfTree->left = b;
-    else if (restOfTree->right->data == node->data)
+    else if (restOfTree->right &&
+             restOfTree->right->data == node->parent->parent->data)
       restOfTree->right = b;
     else
-      throw std::domain_error("Error in restructuring");
+      throw std::runtime_error("restructure: node is not a child of its "
+                               "parent");
+    b->parent = restOfTree;
+
     b->left = a;
     a->parent = b;
 
     a->left = t0;
     a->right = t1;
-    if (t0 && t1)
-    {
+    if (t0)
       t0->parent = a;
+    if (t1)
       t1->parent = a;
-    }
 
     b->right = c;
     c->parent = b;
 
     c->left = t2;
     c->right = t3;
-    if (t2 && t3)
-    {
+    if (t2)
       t2->parent = c;
+    if (t3)
       t3->parent = c;
-    }
+
+    updateHeights(a);
+    updateHeights(b);
+    updateHeights(c);
+
     return b;
   }
 
@@ -119,8 +145,8 @@ template <typename T> class AVLTree
     }
     else if (!node->left)
     {
-      heights[1] = node->right->height;
       heights[0] = 0;
+      heights[1] = node->right->height;
     }
     else if (!node->right)
     {
@@ -137,15 +163,12 @@ template <typename T> class AVLTree
 
   void rebalance(AVLNode *node)
   {
-    auto heights = getHeights(node);
-    node->height = 1 + std::max(heights[0], heights[1]);
     AVLNode *tempNode = node;
+    auto heights = getHeights(tempNode);
+    tempNode->height = 1 + std::max(heights[0], heights[1]);
     while (tempNode != root)
     {
-      if (!tempNode)
-        tempNode = node->parent;
-      else
-        tempNode = tempNode->parent;
+      tempNode = tempNode->parent;
       auto childrenHeights = getHeights(tempNode);
       if (abs(childrenHeights[0] - childrenHeights[1]) > 1)
       {
@@ -167,10 +190,6 @@ template <typename T> class AVLTree
       childrenHeights = getHeights(tempNode);
       tempNode->height = 1 + std::max(childrenHeights[0], childrenHeights[1]);
     }
-
-    while (tempNode->parent)
-      tempNode = tempNode->parent;
-    root = tempNode;
   }
 
   bool contains(const T &toFind, AVLNode *&node)
@@ -261,17 +280,15 @@ public:
   {
     if (!root)
     {
-      root = new AVLNode(toInsert, nullptr, nullptr, nullptr, 0);
+      root = new AVLNode(toInsert, nullptr, nullptr, nullptr, 1);
       return true;
     }
     AVLNode *node = insert(toInsert, root, node->parent);
-    if (node && node->parent && node->parent->parent)
+    if (node)
     {
       rebalance(node);
       return true;
     }
-    else if (node)
-      return true;
     return false;
   }
 
