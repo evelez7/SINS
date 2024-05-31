@@ -57,3 +57,19 @@ TEST(BinarySearchTreeTest, Remove)
   EXPECT_NO_THROW(tree.remove(11));
   EXPECT_FALSE(tree.contains(11));
 }
+
+TEST(BinarySearchTreeTest, Size)
+{
+  BinarySearchTree<int> tree;
+  tree.insert(10);
+  tree.insert(3);
+  tree.insert(20);
+  tree.insert(30);
+  tree.insert(25);
+
+  EXPECT_EQ(tree.size(), 5);
+  tree.remove(20);
+  EXPECT_EQ(tree.size(), 4);
+  tree.clear();
+  EXPECT_EQ(tree.size(), 0);
+}

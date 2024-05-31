@@ -1,6 +1,8 @@
 #ifndef BINARY_SEARCH_TREE_H
 #define BINARY_SEARCH_TREE_H
 
+#include <cstddef>
+
 /**
   Implemented according to Weiss, 4th ed.
 */
@@ -19,12 +21,14 @@ template <typename T> class BinarySearchTree
   };
 
   Node *root;
+  std::size_t n;
 
   bool insert(const T &toInsert, Node *&node)
   {
     if (!node)
     {
       node = new Node(toInsert, nullptr, nullptr);
+      ++n;
       return true;
     }
     else if (toInsert < node->data)
@@ -82,6 +86,7 @@ template <typename T> class BinarySearchTree
       node = (node->left != nullptr) ? node->left : node->right;
       delete old;
       old = nullptr;
+      --n;
     }
   }
 
@@ -98,7 +103,7 @@ template <typename T> class BinarySearchTree
   }
 
 public:
-  BinarySearchTree() : root(nullptr) {}
+  BinarySearchTree() : root(nullptr), n(0) {}
 
   ~BinarySearchTree()
   {
@@ -133,6 +138,7 @@ public:
   void clear()
   {
     clear(root);
+    n = 0;
   }
 
   bool empty()
@@ -140,6 +146,11 @@ public:
     if (!root)
       return true;
     return false;
+  }
+
+  std::size_t size()
+  {
+    return n;
   }
 };
 

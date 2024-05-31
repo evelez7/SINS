@@ -38,6 +38,11 @@ public:
   {
     s.remove(value);
   }
+
+  std::size_t size()
+  {
+    return s.size();
+  }
 };
 } // namespace ev
 

@@ -30,3 +30,16 @@ TEST(SetTest, Remove)
   s.insert(25);
   EXPECT_NO_THROW(s.remove(25));
 }
+
+TEST(SetTest, Size)
+{
+  ev::set<int> s;
+  s.insert(10);
+  s.insert(3);
+  s.insert(20);
+  s.insert(30);
+  s.insert(25);
+  EXPECT_EQ(s.size(), 5);
+  s.remove(30);
+  EXPECT_EQ(s.size(), 4);
+}

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <stdexcept>
 
 namespace ev
@@ -23,6 +24,7 @@ template <typename T> class AVLTree
     }
   };
   AVLNode *root;
+  std::size_t n;
 
   void updateHeights(AVLNode *node)
   {
@@ -240,6 +242,7 @@ template <typename T> class AVLTree
       node = (node->left != nullptr) ? node->left : node->right;
       delete old;
       old = nullptr;
+      --n;
     }
   }
 
@@ -270,7 +273,7 @@ template <typename T> class AVLTree
   }
 
 public:
-  AVLTree() : root(nullptr) {}
+  AVLTree() : root(nullptr), n(0) {}
   ~AVLTree()
   {
     clear(root);
@@ -281,12 +284,14 @@ public:
     if (!root)
     {
       root = new AVLNode(toInsert, nullptr, nullptr, nullptr, 1);
+      n++;
       return true;
     }
     AVLNode *node = insert(toInsert, root, node->parent);
     if (node)
     {
       rebalance(node);
+      ++n;
       return true;
     }
     return false;
@@ -320,6 +325,7 @@ public:
   void clear()
   {
     clear(root);
+    n = 0;
   }
 
   bool empty()
@@ -327,6 +333,11 @@ public:
     if (!root)
       return true;
     return false;
+  }
+
+  std::size_t size()
+  {
+    return n;
   }
 };
 } // namespace ev
