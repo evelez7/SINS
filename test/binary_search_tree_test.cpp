@@ -3,7 +3,7 @@
 
 TEST(BinarySearchTreeTest, Insertion)
 {
-  BinarySearchTree<int> tree;
+  ev::BinarySearchTree<int> tree;
   EXPECT_TRUE(tree.insert(1));
   int x = 2;
   EXPECT_TRUE(tree.insert(x));
@@ -14,7 +14,7 @@ TEST(BinarySearchTreeTest, Insertion)
 
 TEST(BinarySearchTreeTest, FindMax)
 {
-  BinarySearchTree<int> tree;
+  ev::BinarySearchTree<int> tree;
   ASSERT_TRUE(tree.insert(7));
   ASSERT_TRUE(tree.insert(6));
   ASSERT_TRUE(tree.insert(3));
@@ -24,7 +24,7 @@ TEST(BinarySearchTreeTest, FindMax)
 
 TEST(BinarySearchTreeTest, FindMin)
 {
-  BinarySearchTree<int> tree;
+  ev::BinarySearchTree<int> tree;
   ASSERT_TRUE(tree.insert(7));
   ASSERT_TRUE(tree.insert(6));
   ASSERT_TRUE(tree.insert(3));
@@ -35,7 +35,7 @@ TEST(BinarySearchTreeTest, FindMin)
 
 TEST(BinarySearchTreeTest, Contains)
 {
-  BinarySearchTree<int> tree;
+  ev::BinarySearchTree<int> tree;
   ASSERT_TRUE(tree.insert(7));
   ASSERT_TRUE(tree.insert(6));
   ASSERT_TRUE(tree.insert(3));
@@ -47,7 +47,7 @@ TEST(BinarySearchTreeTest, Contains)
 
 TEST(BinarySearchTreeTest, Remove)
 {
-  BinarySearchTree<int> tree;
+  ev::BinarySearchTree<int> tree;
   ASSERT_TRUE(tree.insert(7));
   ASSERT_TRUE(tree.insert(6));
   ASSERT_TRUE(tree.insert(3));
@@ -58,9 +58,21 @@ TEST(BinarySearchTreeTest, Remove)
   EXPECT_FALSE(tree.contains(11));
 }
 
+TEST(BinarySearchTreeTest, Clear)
+{
+  ev::BinarySearchTree<int> tree;
+  EXPECT_NO_THROW(tree.clear());
+  tree.insert(1);
+  tree.insert(2);
+  tree.insert(3);
+  tree.insert(4);
+  tree.remove(2);
+  EXPECT_NO_THROW(tree.clear());
+}
+
 TEST(BinarySearchTreeTest, Size)
 {
-  BinarySearchTree<int> tree;
+  ev::BinarySearchTree<int> tree;
   tree.insert(10);
   tree.insert(3);
   tree.insert(20);
@@ -70,6 +82,6 @@ TEST(BinarySearchTreeTest, Size)
   EXPECT_EQ(tree.size(), 5);
   tree.remove(20);
   EXPECT_EQ(tree.size(), 4);
-  tree.clear();
+  EXPECT_NO_THROW(tree.clear());
   EXPECT_EQ(tree.size(), 0);
 }

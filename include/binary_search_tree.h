@@ -1,34 +1,24 @@
 #ifndef BINARY_SEARCH_TREE_H
 #define BINARY_SEARCH_TREE_H
 
-#include <cstddef>
+#include "binary_tree_mixin.hpp"
+#include "node.hpp"
 
+namespace ev
+{
 /**
   Implemented according to Weiss, 4th ed.
 */
-template <typename T> class BinarySearchTree
+template<typename T>
+class BinarySearchTree : public BinaryTree<T, BinaryNode<T>>
 {
-  struct Node
-  {
-    T data;
-    Node *left;
-    Node *right;
 
-    Node(const T &data, Node *left, Node *right)
-        : data(data), left(left), right(right)
-    {
-    }
-  };
-
-  Node *root;
-  std::size_t n;
-
-  bool insert(const T &toInsert, Node *&node)
+  bool insert(const T &toInsert, BinaryNode<T> *&node)
   {
     if (!node)
     {
-      node = new Node(toInsert, nullptr, nullptr);
-      ++n;
+      node = new BinaryNode<T>(toInsert, nullptr, nullptr);
+      ++this->n;
       return true;
     }
     else if (toInsert < node->data)
@@ -38,120 +28,19 @@ template <typename T> class BinarySearchTree
     return false;
   }
 
-  bool contains(const T &toFind, Node *&node)
-  {
-    if (!node)
-      return false;
-    else if (toFind < node->data)
-      return contains(toFind, node->left);
-    else if (toFind > node->data)
-      return contains(toFind, node->right);
-    return true;
-  }
-
-  Node *findMin(Node *node) const
-  {
-    if (node == nullptr)
-      return nullptr;
-    if (node->left == nullptr)
-      return node;
-    return findMin(node->left);
-  }
-
-  Node *findMax(Node *node) const
-  {
-    if (!node)
-      return nullptr;
-    if (node->right == nullptr)
-      return node;
-    return findMax(node->right);
-  }
-
-  void remove(const T &toRemove, Node *&node)
-  {
-    if (!node)
-      return;
-    if (toRemove < node->data)
-      remove(toRemove, node->left);
-    else if (toRemove > node->data)
-      remove(toRemove, node->right);
-    else if (node->left && node->right)
-    {
-      node->data = findMin(node->right)->data;
-      remove(node->data, node->right);
-    }
-    else
-    {
-      Node *old = node;
-      node = (node->left != nullptr) ? node->left : node->right;
-      delete old;
-      old = nullptr;
-      --n;
-    }
-  }
-
-  void clear(Node *&node)
-  {
-    if (!node)
-      return;
-    if (node->left)
-      clear(node->left);
-    if (node->right)
-      clear(node->right);
-    delete node;
-    node = nullptr;
-  }
-
 public:
-  BinarySearchTree() : root(nullptr), n(0) {}
+  BinarySearchTree() : BinaryTree<T, BinaryNode<T>>(nullptr, 0) {}
 
   ~BinarySearchTree()
   {
-    clear(root);
+    BinaryTree<T, BinaryNode<T>>::clear(this->root);
   }
 
-  virtual bool insert(const T &toInsert)
+  bool insert(const T &toInsert)
   {
-    return insert(toInsert, root);
-  }
-
-  bool contains(const T &toFind)
-  {
-    return contains(toFind, root);
-  }
-
-  const T &findMin() const
-  {
-    return findMin(root)->data;
-  }
-
-  const T &findMax() const
-  {
-    return findMax(root)->data;
-  }
-
-  void remove(const T &toRemove)
-  {
-    remove(toRemove, root);
-  }
-
-  void clear()
-  {
-    clear(root);
-    n = 0;
-  }
-
-  bool empty()
-  {
-    if (!root)
-      return true;
-    return false;
-  }
-
-  std::size_t size()
-  {
-    return n;
+    return insert(toInsert, this->root);
   }
 };
+} // namespace ev
 
 #endif
