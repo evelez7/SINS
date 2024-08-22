@@ -1,32 +1,17 @@
 #ifndef EV_AVL_TREE_H
 #define EV_AVL_TREE_H
 
+#include "binary_tree_mixin.hpp"
+#include "node.hpp"
 #include <algorithm>
 #include <array>
-#include <cstddef>
 #include <stdexcept>
 
 namespace ev
 {
-template <typename T> class AVLTree
+template<typename T> class AVLTree : public BinaryTree<T, AVLNode<T>>
 {
-  struct AVLNode
-  {
-    int height;
-    AVLNode *left;
-    AVLNode *right;
-    AVLNode *parent;
-    T data;
-    AVLNode(const T &data, AVLNode *left, AVLNode *right, AVLNode *parent,
-            int height)
-        : height(height), parent(parent), left(left), right(right), data(data)
-    {
-    }
-  };
-  AVLNode *root;
-  std::size_t n;
-
-  void updateHeights(AVLNode *node)
+  void updateHeights(AVLNode<T> *node)
   {
     if (node == nullptr)
       return;
@@ -42,9 +27,9 @@ template <typename T> class AVLTree
     Trinode restructuring according to Goodrich, Tamassia
     Covers all 4 cases for rotations, the last two being double rotations
   */
-  AVLNode *restructure(AVLNode *&node)
+  AVLNode<T> *restructure(AVLNode<T> *&node)
   {
-    AVLNode *a, *b, *c, *t0, *t1, *t2, *t3;
+    AVLNode<T> *a, *b, *c, *t0, *t1, *t2, *t3;
     /// let a, b, c be inorder of x, y, z where x = node, y=parent, and
     /// z=grandparent
     if (node->data < node->parent->data &&
@@ -98,7 +83,7 @@ template <typename T> class AVLTree
     // replace the subtree rooted at z
     auto *restOfTree = node->parent->parent->parent;
     if (!restOfTree)
-      root = b;
+      this->root = b;
     else if (restOfTree->left &&
              restOfTree->left->data == node->parent->parent->data)
       restOfTree->left = b;
@@ -137,7 +122,7 @@ template <typename T> class AVLTree
     return b;
   }
 
-  std::array<int, 2> getHeights(AVLNode *node)
+  std::array<int, 2> getHeights(AVLNode<T> *node)
   {
     std::array<int, 2> heights;
     if (!node->left && !node->right)
@@ -163,24 +148,24 @@ template <typename T> class AVLTree
     return heights;
   }
 
-  void rebalance(AVLNode *node)
+  void rebalance(AVLNode<T> *node)
   {
-    AVLNode *tempNode = node;
+    AVLNode<T> *tempNode = node;
     auto heights = getHeights(tempNode);
     tempNode->height = 1 + std::max(heights[0], heights[1]);
-    while (tempNode != root)
+    while (tempNode != this->root)
     {
       tempNode = tempNode->parent;
       auto childrenHeights = getHeights(tempNode);
       if (abs(childrenHeights[0] - childrenHeights[1]) > 1)
       {
-        AVLNode *tallestChild;
+        AVLNode<T> *tallestChild;
         if (childrenHeights[0] > childrenHeights[1])
           tallestChild = tempNode->left;
         else
           tallestChild = tempNode->right;
 
-        AVLNode *tallestGrandchild;
+        AVLNode<T> *tallestGrandchild;
         auto grandchildHeights = getHeights(tallestChild);
         if (grandchildHeights[0] > grandchildHeights[1])
           tallestGrandchild = tallestChild->left;
@@ -194,75 +179,11 @@ template <typename T> class AVLTree
     }
   }
 
-  bool contains(const T &toFind, AVLNode *&node)
-  {
-    if (!node)
-      return false;
-    else if (toFind < node->data)
-      return contains(toFind, node->left);
-    else if (toFind > node->data)
-      return contains(toFind, node->right);
-    return true;
-  }
-
-  AVLNode *findMin(AVLNode *node) const
-  {
-    if (node == nullptr)
-      return nullptr;
-    if (node->left == nullptr)
-      return node;
-    return findMin(node->left);
-  }
-
-  AVLNode *findMax(AVLNode *node) const
-  {
-    if (!node)
-      return nullptr;
-    if (node->right == nullptr)
-      return node;
-    return findMax(node->right);
-  }
-
-  void remove(const T &toRemove, AVLNode *&node)
-  {
-    if (!node)
-      return;
-    if (toRemove < node->data)
-      remove(toRemove, node->left);
-    else if (toRemove > node->data)
-      remove(toRemove, node->right);
-    else if (node->left && node->right)
-    {
-      node->data = findMin(node->right)->data;
-      remove(node->data, node->right);
-    }
-    else
-    {
-      AVLNode *old = node;
-      node = (node->left != nullptr) ? node->left : node->right;
-      delete old;
-      old = nullptr;
-      --n;
-    }
-  }
-
-  void clear(AVLNode *&node)
-  {
-    if (!node)
-      return;
-    if (node->left)
-      clear(node->left);
-    if (node->right)
-      clear(node->right);
-    delete node;
-    node = nullptr;
-  }
-
-  AVLNode *insert(const T &toInsert, AVLNode *&node, AVLNode *&parent)
+  AVLNode<T> *insert(const T &toInsert, AVLNode<T> *&node, AVLNode<T> *&parent)
   {
     if (!node)
     {
-      node = new AVLNode(toInsert, nullptr, nullptr, parent, 1);
+      node = new AVLNode<T>(toInsert, nullptr, nullptr, parent, 1);
       return node;
     }
     else if (toInsert < node->data)
@@ -273,71 +194,28 @@ template <typename T> class AVLTree
   }
 
 public:
-  AVLTree() : root(nullptr), n(0) {}
+  AVLTree() : BinaryTree<T, AVLNode<T>>(nullptr, 0) {}
   ~AVLTree()
   {
-    clear(root);
+    BinaryTree<T, AVLNode<T>>::clear();
   }
 
   bool insert(const T &toInsert)
   {
-    if (!root)
+    if (!this->root)
     {
-      root = new AVLNode(toInsert, nullptr, nullptr, nullptr, 1);
-      n++;
+      this->root = new AVLNode<T>(toInsert, nullptr, nullptr, nullptr, 1);
+      ++this->n;
       return true;
     }
-    AVLNode *node = insert(toInsert, root, node->parent);
+    AVLNode<T> *node = insert(toInsert, this->root, node->parent);
     if (node)
     {
       rebalance(node);
-      ++n;
+      ++this->n;
       return true;
     }
     return false;
-  }
-
-  AVLNode *getRoot()
-  {
-    return root;
-  }
-
-  bool contains(const T &toFind)
-  {
-    return contains(toFind, root);
-  }
-
-  const T &findMin() const
-  {
-    return findMin(root)->data;
-  }
-
-  const T &findMax() const
-  {
-    return findMax(root)->data;
-  }
-
-  void remove(const T &toRemove)
-  {
-    remove(toRemove, root);
-  }
-
-  void clear()
-  {
-    clear(root);
-    n = 0;
-  }
-
-  bool empty()
-  {
-    if (!root)
-      return true;
-    return false;
-  }
-
-  std::size_t size()
-  {
-    return n;
   }
 };
 } // namespace ev

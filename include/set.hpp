@@ -2,12 +2,10 @@
 #define EV_SET_HPP
 
 #include "avl_tree.hpp"
-#include "tree_mixin.hpp"
+#include "binary_tree_mixin.hpp"
 
 namespace ev
 {
-template<typename T>
-concept IsTree = is_tree<T>() == true;
 
 template<typename T, typename Structure = ev::AVLTree<T>>
   requires IsTree<Structure>
