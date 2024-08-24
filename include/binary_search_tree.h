@@ -15,9 +15,9 @@ class BinarySearchTree : public BinaryTree<T, BinaryNode<T>>
 
   bool insert(const T &toInsert, BinaryNode<T> *&node)
   {
-    if (!node)
+    if (!node || node->isLeaf())
     {
-      node = new BinaryNode<T>(toInsert, nullptr, nullptr);
+      node = new BinaryNode<T>(toInsert);
       ++this->n;
       return true;
     }

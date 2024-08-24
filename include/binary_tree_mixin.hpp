@@ -29,34 +29,26 @@ protected:
     node = nullptr;
   }
 
-  void remove(const T &toRemove, N *&node)
+  N *search(const T &toFind, N *node) const
   {
     if (!node)
-      return;
-    if (toRemove < node->data)
-      remove(toRemove, node->left);
-    else if (toRemove > node->data)
-      remove(toRemove, node->right);
-    else if (node->left && node->right)
-    {
-      node->data = findMin(node->right)->data;
-      remove(node->data, node->right);
-    }
+      return nullptr;
+    else if (node->isLeaf())
+      return node;
+
+    if (toFind < node->data)
+      return search(toFind, node->left);
+    else if (toFind > node->data)
+      return search(toFind, node->right);
     else
-    {
-      N *old = node;
-      node = (node->left != nullptr) ? node->left : node->right;
-      delete old;
-      old = nullptr;
-      --n;
-    }
+        return node;
   }
 
   N *findMin(N *node) const
   {
-    if (node == nullptr)
+    if (!node)
       return nullptr;
-    if (node->left == nullptr)
+    if (!node->left || node->left->isLeaf())
       return node;
     return findMin(node->left);
   }
@@ -65,9 +57,39 @@ protected:
   {
     if (!node)
       return nullptr;
-    if (node->right == nullptr)
+    if (!node->right || node->right->isLeaf())
       return node;
     return findMax(node->right);
+  }
+
+  N *removeNode(N *&node)
+  {
+    if (node->left && node->right)
+    {
+      node->data = findMin(node->right)->data;
+      node->right = removeHelper(node->data, node->right);
+    }
+    else
+    {
+      N *old = node;
+      node = (node->left != nullptr) ? node->left : node->right;
+      delete old;
+      --n;
+    }
+    return node;
+  }
+
+  N* removeHelper(const T&toRemove, N*node)
+  {
+    if (!node)
+      return nullptr;
+    if (toRemove < node->data)
+      node->left = removeHelper(toRemove, node->left);
+    else if (toRemove > node->data)
+      node->right = removeHelper(toRemove, node->right);
+    else
+      return removeNode(node);
+    return node;
   }
 
 public:
@@ -75,12 +97,9 @@ public:
 
   bool contains(const T &toFind, N *&node)
   {
-    if (!node)
+    N *found = search(toFind, node);
+    if (!found || found->isLeaf())
       return false;
-    else if (toFind < node->data)
-      return contains(toFind, node->left);
-    else if (toFind > node->data)
-      return contains(toFind, node->right);
     return true;
   }
 
@@ -101,9 +120,19 @@ public:
     return n;
   }
 
-  void remove(const T &toRemove)
+  // FIXME: To conform to the std, this should be called "erase" and return
+  // the number of elements removed
+  virtual N *remove(const T &toRemove)
   {
-    remove(toRemove, root);
+    if (!root)
+      return nullptr;
+    if (toRemove == root->data)
+    {
+      N *oldRoot = root;
+      root = removeNode(root);
+      return oldRoot;
+    }
+    return removeHelper(toRemove, root);
   }
 
   const T &findMin() const

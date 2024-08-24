@@ -10,6 +10,7 @@ TEST(BinarySearchTreeTest, Insertion)
 
   int y = 3;
   EXPECT_TRUE(tree.insert(x + 2));
+  EXPECT_EQ(tree.size(), 3);
 }
 
 TEST(BinarySearchTreeTest, FindMax)
