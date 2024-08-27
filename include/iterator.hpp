@@ -10,6 +10,16 @@ protected:
 
 public:
   iterator(T *ptr) : current(ptr) {}
+
+  T *operator->()
+  {
+    return current;
+  }
+
+  virtual T &operator*()
+  {
+    return *current;
+  }
 };
 
 } // namespace ev

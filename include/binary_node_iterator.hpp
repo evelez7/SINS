@@ -18,17 +18,12 @@ public:
   {
   }
 
-  T operator*()
-  {
-    return this->current->data;
-  }
+  // T &operator*() override
+  //{
+  //   return this->current;
+  // }
 
-  BinaryNodeBase<T, N> *operator->()
-  {
-    return this->current;
-  }
-
-  iterator<T> &operator++()
+  BinaryNodeIterator<T, N> &operator++()
   {
     if (this->current->right)
     {
@@ -49,7 +44,7 @@ public:
     return *this;
   }
 
-  iterator<T> &operator--()
+  BinaryNodeIterator<T, N> &operator--()
   {
     if (this->current == nullptr)
     {

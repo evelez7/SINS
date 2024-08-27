@@ -21,6 +21,7 @@ add_executable(
   test/binary_search_tree_test.cpp
   test/avl_tree_test.cpp
   test/set_test.cpp
+  test/binary_node_iterator_test.cpp
 )
 
 target_link_libraries(
