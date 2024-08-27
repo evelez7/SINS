@@ -1,8 +1,10 @@
 #ifndef EV_TREE_MIXIN_HPP
 #define EV_TREE_MIXIN_HPP
 
+#include "binary_node_iterator.hpp"
 #include <cstddef>
 #include <type_traits>
+#include <utility>
 
 namespace ev
 {
@@ -29,26 +31,32 @@ protected:
     node = nullptr;
   }
 
-  N *search(const T &toFind, N *node) const
+  std::pair<N *, N *> search(const T &toFind, N *node) const
   {
-    if (!node)
-      return nullptr;
-    else if (node->isLeaf())
-      return node;
-
-    if (toFind < node->data)
-      return search(toFind, node->left);
-    else if (toFind > node->data)
-      return search(toFind, node->right);
-    else
-        return node;
+    N *parent = nullptr;
+    while (node)
+    {
+      if (toFind == node->data)
+        return {node, parent};
+      else if (toFind < node->data)
+      {
+        parent = node;
+        node = node->left;
+      }
+      else
+      {
+        parent = node;
+        node = node->right;
+      }
+    }
+    return {nullptr, parent};
   }
 
   N *findMin(N *node) const
   {
     if (!node)
       return nullptr;
-    if (!node->left || node->left->isLeaf())
+    if (!node->left)
       return node;
     return findMin(node->left);
   }
@@ -57,7 +65,7 @@ protected:
   {
     if (!node)
       return nullptr;
-    if (!node->right || node->right->isLeaf())
+    if (!node->right)
       return node;
     return findMax(node->right);
   }
@@ -95,17 +103,10 @@ protected:
 public:
   BinaryTree(N *root, std::size_t n) : root(root), n(n) {}
 
-  bool contains(const T &toFind, N *&node)
-  {
-    N *found = search(toFind, node);
-    if (!found || found->isLeaf())
-      return false;
-    return true;
-  }
-
   bool contains(const T &toFind)
   {
-    return contains(toFind, root);
+    auto [found, _] = search(toFind, root);
+    return found != nullptr;
   }
 
   bool empty()
@@ -122,17 +123,20 @@ public:
 
   // FIXME: To conform to the std, this should be called "erase" and return
   // the number of elements removed
-  virtual N *remove(const T &toRemove)
+  virtual std::size_t remove(const T &toRemove)
   {
     if (!root)
-      return nullptr;
+      return 0;
     if (toRemove == root->data)
     {
       N *oldRoot = root;
       root = removeNode(root);
-      return oldRoot;
+      return 1;
     }
-    return removeHelper(toRemove, root);
+    auto *result = removeHelper(toRemove, root);
+    if (result)
+      return 1;
+    return 0;
   }
 
   const T &findMin() const
@@ -154,6 +158,16 @@ public:
   {
     clear(root);
     n = 0;
+  }
+
+  BinaryNodeIterator<T, N> begin()
+  {
+    return BinaryNodeIterator<T, N>(root, root);
+  }
+
+  BinaryNodeIterator<T, N> end()
+  {
+    return BinaryNodeIterator<T, N>(nullptr, root);
   }
 };
 

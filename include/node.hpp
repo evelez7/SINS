@@ -3,84 +3,85 @@
 
 namespace ev
 {
-template<typename T> class Node
+
+template<typename T, typename N> struct BinaryNodeBase
 {
-public:
   T data;
-
-  Node(T data) : data(data) {}
-};
-
-namespace
-{
-template<typename T, typename N> class BinaryTreeNode : public Node<T>
-{
-public:
   N *left;
   N *right;
+  N *parent;
 
-  BinaryTreeNode(T data, N *left, N *right)
-      : Node<T>(data), left(left), right(right)
+  BinaryNodeBase(T data, N *left, N *right, N *parent = nullptr)
+      : data(data), left(left), right(right), parent(parent)
   {
   }
 
-  BinaryTreeNode() : Node<T>(T()), left(nullptr), right(nullptr) {}
-
-  virtual bool isLeaf() const
+  BinaryNodeBase(N *parent)
+      : data(T()), left(nullptr), right(nullptr), parent(parent)
   {
-    if (!this->left && !this->right)
+  }
+
+  BinaryNodeBase() : data(T()), left(nullptr), right(nullptr), parent(nullptr)
+  {
+  }
+
+  virtual bool isExternal() const
+  {
+    if (left == nullptr && right == nullptr)
       return true;
     return false;
   }
 };
-} // namespace
 
 // Disgusting
-template<typename T> class BinaryNode : public BinaryTreeNode<T, BinaryNode<T>>
+template<typename T> struct BinaryNode : public BinaryNodeBase<T, BinaryNode<T>>
 {
-public:
-  BinaryNode(const T &data, BinaryNode *left, BinaryNode *right)
-      : BinaryTreeNode<T, BinaryNode>(data, left, right)
-  {
-  }
-
-  BinaryNode() : BinaryTreeNode<T, BinaryNode>(T(), nullptr, nullptr) {}
-
-  BinaryNode(const T &data)
-      : BinaryTreeNode<T, BinaryNode>(data, new BinaryNode<T>(),
-                                      new BinaryNode<T>())
-  {
-  }
+  using BinaryNodeBase<T, BinaryNode<T>>::BinaryNodeBase;
 };
 
-template<typename T> class AVLNode : public BinaryTreeNode<T, AVLNode<T>>
+template<typename T> struct AVLNode : public BinaryNodeBase<T, AVLNode<T>>
 {
-public:
   int height;
-  AVLNode<T> *parent;
 
   AVLNode(const T &data, AVLNode *left, AVLNode *right, AVLNode *parent,
           int height)
-      : BinaryTreeNode<T, AVLNode>(data, left, right), height(height),
-        parent(parent)
+      : BinaryNodeBase<T, AVLNode>(data, left, right, parent), height(height)
   {
   }
 
   AVLNode()
-      : BinaryTreeNode<T, AVLNode>(T(), nullptr, nullptr), height(0),
-        parent(nullptr)
+      : BinaryNodeBase<T, AVLNode>(T(), nullptr, nullptr, nullptr), height(0)
+
   {
   }
 
   AVLNode(AVLNode *parent)
-      : BinaryTreeNode<T, AVLNode>(T(), nullptr, nullptr), height(0),
-        parent(parent)
+      : BinaryNodeBase<T, AVLNode>(T(), nullptr, nullptr, parent), height(0)
   {
   }
 
-  bool isLeaf() const override
+  AVLNode(const T &data, int height)
+      : BinaryNodeBase<T, AVLNode>(data, nullptr, nullptr, nullptr),
+        height(height)
   {
-    if (height == 0 || (this->left == nullptr && this->right == nullptr))
+  }
+
+  AVLNode(const T &data, AVLNode *parent, int height)
+      : BinaryNodeBase<T, AVLNode>(data, nullptr, nullptr, parent),
+        height(height)
+  {
+  }
+
+  bool isLeaf() const
+  {
+    if (this->left == nullptr && this->right == nullptr)
+      return true;
+    return false;
+  }
+
+  bool isExternal() const override
+  {
+    if (height == 0)
       return true;
     return false;
   }

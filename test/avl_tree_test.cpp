@@ -1,20 +1,24 @@
 #include "avl_tree.hpp"
+#include "binary_node_iterator.hpp"
 #include <gtest/gtest.h>
 
 TEST(AVLTreeTest, Insert)
 {
   ev::AVLTree<int> tree;
-  EXPECT_TRUE(tree.insert(1));
-  EXPECT_TRUE(tree.insert(2));
-  EXPECT_TRUE(tree.insert(-1));
+  EXPECT_TRUE(tree.insert(1).second);
+  EXPECT_EQ(tree.getRoot()->data, 1);
+  EXPECT_TRUE(tree.insert(2).second);
+  EXPECT_EQ(tree.getRoot()->right->data, 2);
+  EXPECT_TRUE(tree.insert(-1).second);
+  EXPECT_EQ(tree.getRoot()->left->data, -1);
 }
 
 TEST(AVLTreeTest, Clear)
 {
   ev::AVLTree<int> tree;
-  EXPECT_TRUE(tree.insert(1));
-  EXPECT_TRUE(tree.insert(2));
-  EXPECT_TRUE(tree.insert(-1));
+  EXPECT_TRUE(tree.insert(1).second);
+  EXPECT_TRUE(tree.insert(2).second);
+  EXPECT_TRUE(tree.insert(-1).second);
 
   ASSERT_NO_THROW(tree.clear());
   EXPECT_EQ(tree.getRoot(), nullptr);
@@ -27,6 +31,18 @@ TEST(AVLTreeTest, Rotation)
   tree.insert(2);
   tree.insert(3);
   EXPECT_EQ(tree.getRoot()->left->data, 1);
+  EXPECT_EQ(tree.getRoot()->data, 2);
+  EXPECT_EQ(tree.getRoot()->right->data, 3);
+  tree.insert(4);
+  tree.insert(5);
+  EXPECT_EQ(tree.getRoot()->right->data, 4);
+  EXPECT_EQ(tree.getRoot()->right->right->data, 5);
+  EXPECT_EQ(tree.getRoot()->right->left->data, 3);
+  tree.remove(2);
+  EXPECT_EQ(tree.getRoot()->data, 4);
+  EXPECT_EQ(tree.getRoot()->left->data, 1);
+  EXPECT_EQ(tree.getRoot()->left->right->data, 3);
+  EXPECT_EQ(tree.getRoot()->right->data, 5);
 }
 
 TEST(AVLTreeTest, HeightCheck)

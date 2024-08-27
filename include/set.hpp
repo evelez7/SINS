@@ -17,7 +17,7 @@ class set
 public:
   set() = default;
 
-  bool insert(T const &value)
+  typename Structure::InsertResult insert(T const &value)
   {
     return s.insert(value);
   }

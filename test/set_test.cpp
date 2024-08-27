@@ -9,7 +9,7 @@ TEST(SetTest, Construction)
 TEST(SetTest, Insert)
 {
   ev::set<int> s;
-  EXPECT_TRUE(s.insert(1));
+  EXPECT_TRUE(s.insert(1).second);
 }
 
 TEST(SetTest, Clear)

@@ -3,7 +3,7 @@
 
 #include "binary_tree_mixin.hpp"
 #include "node.hpp"
-
+#include <utility>
 namespace ev
 {
 /**
@@ -13,19 +13,20 @@ template<typename T>
 class BinarySearchTree : public BinaryTree<T, BinaryNode<T>>
 {
 
-  bool insert(const T &toInsert, BinaryNode<T> *&node)
+  BinaryNode<T> *insert(const T &toInsert, BinaryNode<T> *&node,
+                        BinaryNode<T> *parent = nullptr)
   {
-    if (!node || node->isLeaf())
+    if (!node)
     {
-      node = new BinaryNode<T>(toInsert);
+      node = new BinaryNode<T>(toInsert, nullptr, nullptr, parent);
       ++this->n;
-      return true;
+      return node;
     }
     else if (toInsert < node->data)
-      return insert(toInsert, node->left);
+      return insert(toInsert, node->left, node);
     else if (toInsert > node->data)
-      return insert(toInsert, node->right);
-    return false;
+      return insert(toInsert, node->right, node);
+    return nullptr;
   }
 
 public:
@@ -36,9 +37,21 @@ public:
     BinaryTree<T, BinaryNode<T>>::clear(this->root);
   }
 
-  bool insert(const T &toInsert)
+  std::pair<BinaryNode<T> *, bool> insert(const T &toInsert)
   {
-    return insert(toInsert, this->root);
+    if (!this->root)
+    {
+      this->root = new BinaryNode<T>(toInsert, nullptr, nullptr, nullptr);
+      ++this->n;
+      return std::make_pair(this->root, true);
+    }
+
+    auto result = insert(toInsert, this->root);
+    if (result)
+    {
+      return std::make_pair(result, true);
+    }
+    return std::make_pair(nullptr, false);
   }
 };
 } // namespace ev
