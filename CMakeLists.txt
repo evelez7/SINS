@@ -22,6 +22,7 @@ add_executable(
   test/avl_tree_test.cpp
   test/set_test.cpp
   test/binary_node_iterator_test.cpp
+  test/map_test.cpp
 )
 
 target_link_libraries(

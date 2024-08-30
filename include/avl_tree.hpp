@@ -15,9 +15,8 @@ namespace ev
 ///
 /// Implementation assumes leafs are actually nodes with 0 height and nullptr
 /// children
-///
-/// FIXME: Consider an implementation where leafs are actually nullptr
-template<typename T> class AVLTree : public BinaryTree<T, AVLNode<T>>
+template<typename T, typename NodeType = ev::AVLNode<T>>
+class AVLTree : public BinaryTree<T, NodeType>
 {
   void updateHeights(AVLNode<T> *node)
   {
@@ -35,9 +34,9 @@ template<typename T> class AVLTree : public BinaryTree<T, AVLNode<T>>
     Trinode restructuring according to Goodrich, Tamassia
     Covers all 4 cases for rotations, the last two being double rotations
   */
-  AVLNode<T> *restructure(AVLNode<T> *&node)
+  NodeType *restructure(AVLNode<T> *&node)
   {
-    AVLNode<T> *a, *b, *c, *t0, *t1, *t2, *t3;
+    NodeType *a, *b, *c, *t0, *t1, *t2, *t3;
     /// let a, b, c be inorder of x, y, z where x = node, y=parent, and
     /// z=grandparent
     if (node->data < node->parent->data &&
@@ -156,7 +155,7 @@ template<typename T> class AVLTree : public BinaryTree<T, AVLNode<T>>
     return heights;
   }
 
-  AVLNode<T> *getShortestChild(AVLNode<T> *node)
+  NodeType *getShortestChild(NodeType *node)
   {
     if (!node->left)
       return node->right;
@@ -165,7 +164,7 @@ template<typename T> class AVLTree : public BinaryTree<T, AVLNode<T>>
     return node->left->height < node->right->height ? node->left : node->right;
   }
 
-  void rebalance(AVLNode<T> *node)
+  void rebalance(NodeType *node)
   {
     auto heights = getHeights(node);
     node->height = 1 + std::max(heights[0], heights[1]);
@@ -174,13 +173,13 @@ template<typename T> class AVLTree : public BinaryTree<T, AVLNode<T>>
       auto childrenHeights = getHeights(node);
       if (abs(childrenHeights[0] - childrenHeights[1]) > 1)
       {
-        AVLNode<T> *tallestChild;
+        NodeType *tallestChild;
         if (childrenHeights[0] > childrenHeights[1])
           tallestChild = node->left;
         else
           tallestChild = node->right;
 
-        AVLNode<T> *tallestGrandchild;
+        NodeType *tallestGrandchild;
         auto grandchildHeights = getHeights(tallestChild);
         if (grandchildHeights[0] > grandchildHeights[1])
           tallestGrandchild = tallestChild->left;
@@ -195,7 +194,7 @@ template<typename T> class AVLTree : public BinaryTree<T, AVLNode<T>>
     }
   }
 
-  bool checkBalance(AVLNode<T> *node)
+  bool checkBalance(NodeType *node)
   {
     if (!node || node->isLeaf())
       return true;
@@ -214,26 +213,28 @@ template<typename T> class AVLTree : public BinaryTree<T, AVLNode<T>>
   }
 
 public:
-  AVLTree() : BinaryTree<T, AVLNode<T>>(nullptr, 0) {}
+  using iterator = BinaryNodeIterator<T, NodeType>;
+  using InsertResult = std::pair<iterator, bool>;
+
+  AVLTree() : BinaryTree<T, NodeType>(nullptr, 0) {}
   ~AVLTree()
   {
-    BinaryTree<T, AVLNode<T>>::clear();
+    BinaryTree<T, NodeType>::clear();
   }
 
-  typedef std::pair<BinaryNodeIterator<T, AVLNode<T>>, bool> InsertResult;
   InsertResult insert(const T &toInsert)
   {
     if (!this->root)
     {
-      this->root = new AVLNode<T>(toInsert, 1);
+      this->root = new NodeType(toInsert, 1);
       ++this->n;
       return InsertResult(
-          BinaryNodeIterator<T, AVLNode<T>>(this->root, this->root), true);
+          BinaryNodeIterator<T, NodeType>(this->root, this->root), true);
     }
 
     auto [found, parent] = this->search(toInsert, this->root);
     if (found)
-      return InsertResult(BinaryNodeIterator<T, AVLNode<T>>(found, this->root),
+      return InsertResult(BinaryNodeIterator<T, NodeType>(found, this->root),
                           false);
 
     AVLNode<T> *newNode = new AVLNode<T>(toInsert, 1);
@@ -246,7 +247,7 @@ public:
 
     rebalance(newNode);
 
-    return InsertResult(BinaryNodeIterator<T, AVLNode<T>>(newNode, this->root),
+    return InsertResult(BinaryNodeIterator<T, NodeType>(newNode, this->root),
                         true);
   }
 

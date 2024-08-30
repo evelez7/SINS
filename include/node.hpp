@@ -86,6 +86,19 @@ template<typename T> struct AVLNode : public BinaryNodeBase<T, AVLNode<T>>
     return false;
   }
 };
+
+template<typename Key, typename T>
+struct MapNode : public BinaryNodeBase<Key, MapNode<Key, T>>
+{
+  using Node = BinaryNodeBase<Key, MapNode<Key, T>>;
+  T value;
+  MapNode() : Node(), value(T()) {}
+
+  MapNode(const Key &key, int height, const T &value)
+      : Node(key, height), value(value)
+  {
+  }
+};
 } // namespace ev
 
 #endif

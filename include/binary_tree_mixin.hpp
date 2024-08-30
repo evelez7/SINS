@@ -8,7 +8,7 @@
 
 namespace ev
 {
-template<typename T> class AVLTree;
+template<typename T, typename NodeType> class AVLTree;
 template<typename T> class BinarySearchTree;
 
 /// Base class for all binary trees (BST, AVL, etc)
@@ -175,7 +175,8 @@ template<typename StructureType> struct IsTreeType : public std::false_type
 {
 };
 
-template<typename T> struct IsTreeType<ev::AVLTree<T>> : public std::true_type
+template<typename T, typename NodeType>
+struct IsTreeType<ev::AVLTree<T, NodeType>> : public std::true_type
 {
 };
 
